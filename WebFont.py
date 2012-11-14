@@ -1,10 +1,10 @@
 #coding:utf-8
 
-import sublime, sublime_plugin, json, urllib, urllib2, webbrowser
+import sublime, sublime_plugin, json, urllib2, webbrowser
 
 class WebfontCommand(sublime_plugin.WindowCommand):
 
-	URL = 'http://webfont.ru/api/list.json'
+	URL = 'http://webfonts.ru/api/list.json'
 	SITE_URL = 'http://webfont.ru/'
 
 	def __init__(self, window):
@@ -31,7 +31,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 
 	def insert(self, text):
 		view = self.window.active_view()		
-		edit = self.window.active_view().begin_edit()		
+		edit = view.begin_edit()		
 		pos = view.sel()[0].a
 		view.insert(edit, pos, text)		
 		view.end_edit(edit)

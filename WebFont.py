@@ -44,7 +44,7 @@ class FolderBrowser:
 
 		if curr_dir is None:
 			self.curr_dir = os.path.abspath(os.path.dirname(__file__))
-		else:
+		else:			
 			self.curr_dir = os.path.abspath(curr_dir)
 		try:			
 			self.curr_dir = unicode(self.curr_dir, 'cp1251')
@@ -56,6 +56,15 @@ class FolderBrowser:
 
 	def _get_file_name(self, file_path):
 		return os.path.split(file_path)[1]
+
+	def _try_to_set_curr_file_dir(self):
+		try:
+			view = self.window.active_view()
+			cur_file_path = view.file_name()
+			cur_file_dir = os.path.dirname(cur_file_path)
+			self.curr_dir = cur_file_dir
+		except:
+			pass
 
 	def _get_sub_dirs(self, dir_path):
 		subdirs = []		
@@ -120,9 +129,9 @@ class FolderBrowser:
 				sublime.status_message(u'текущий каталог: "%s"' % self.curr_dir)
 			else:
 				sublime.status_message(u'невозможно войти в каталог "%s"; текущий каталог: "%s"' % (dir_, self.curr_dir))
-		self.select_folder()
+		self._select_folder()
 		
-	def select_folder(self):			
+	def _select_folder(self):			
 
 		self.folder_list = list()
 		for d in self._get_sub_dirs(self.curr_dir):
@@ -135,6 +144,10 @@ class FolderBrowser:
 		self.folder_list.insert(0, u'* да, распаковать сюда')
 		self.folder_list.insert(0, u'* на уровень выше')		
 		self._show_folder_menu()
+
+	def select_folder(self):
+		self._try_to_set_curr_file_dir()
+		self._select_folder()
 
 
 class WebfontCommand(sublime_plugin.WindowCommand):

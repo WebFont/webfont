@@ -6,6 +6,9 @@ import webbrowser
 import zipfile
 import os
 import threading
+import locale
+
+SETTINGS_FILE = "WebFont.sublime-settings"
 
 def is_st3():
 	return sublime.version()[0] == '3'
@@ -16,6 +19,65 @@ if is_st3():
 else:
 	import urllib2
 	import cStringIO
+
+def get_os_locale():
+	os_locale = locale.getlocale()
+	if os_locale is None:
+		return 'en_US'
+	else:
+		if os_locale[0].startswith('en'):
+			return 'en_US'
+		else if os_locale[0].startswith('ru'):
+			return 'ru_RU'
+		else
+			return 'en_US'
+
+loc = {
+	'en_US':{
+		'cant_create_dir' : u'can\'t create dir: "%s"',
+		'input_dir_name' : u'Enter dir name:',
+		'current_dir' : u'current dir: "%s"',
+		'cant_enter_dir' : u'can\'t enter dir "%s"; current dir: "%s"',
+		'change_disk' : u'* change disk',
+		'create_dir' : u'* create dir',
+		'unpack_here' : u'* yes, unpack here',
+		'level_up' : u'* go up',
+		'cant_refresh_fonts' : u'can\'t update fonts list',
+		'cant_download_font' : u'can\'t download font',
+		'unpack_error' : u'unpacking error',
+		'go_to_webfont' : u'* go to webfont.ru',
+		'update_fonts_list' : u'* update fonts list',
+		'download_font' : u'* download font',
+		'download_complete' : u'font downloaded',
+		'please_wait' : u'please wait',
+		'cant_open_website' : u'can\'t open website "%s"'
+	},
+
+	'ru_RU':{
+		'cant_create_dir' : u'невозможно создать каталог: "%s"',
+		'input_dir_name' : u'Введите имя каталога:',
+		'current_dir' : u'текущий каталог: "%s"',
+		'cant_enter_dir' : u'невозможно войти в каталог "%s"; текущий каталог: "%s"',
+		'change_disk' : u'* сменить диск',
+		'create_dir' : u'* создать каталог',
+		'unpack_here' : u'* да, распаковать сюда',
+		'level_up' : u'* на уровень выше',
+		'cant_refresh_fonts' : u'не удалось обновить список шрифтов',
+		'cant_download_font' : u'не удалось скачать шрифт',
+		'unpack_error' : u'при распаковке шрифта произошла ошибка',
+		'go_to_webfont' : u'* перейти на webfont.ru',
+		'update_fonts_list' : u'* обновить список шрифтов',
+		'download_font' : u'* скачать шрифт',
+		'download_complete' : u'шрифт успешно скачан',
+		'please_wait' : u'немного подождите',
+		'cant_open_website' : u'не удалось открыть страницу "%s"'
+	}
+}
+
+current_loc = loc['en_US']
+
+def _(id):
+	return current_loc[id];
 
 
 class DriveSelector:
@@ -125,7 +187,7 @@ class FolderBrowser:
 				dir_path = os.path.normpath(os.path.join(self.curr_dir, dir_name))
 				os.mkdir(dir_path)
 			except Exception as e:
-				sublime.status_message(u'невозможно создать каталог: "%s"' % dir_path)					
+				sublime.status_message( _('cant_create_dir') % dir_path)					
 				self._check_and_select(None)
 			else:
 				self._check_and_select(dir_path)
@@ -133,7 +195,7 @@ class FolderBrowser:
 		def on_cancel(*args):
 			self._check_and_select(None)
 
-		self.window.show_input_panel(u'Введите имя каталога:', self.new_dir_name, on_done, None, on_cancel)
+		self.window.show_input_panel(_('input_dir_name'), self.new_dir_name, on_done, None, on_cancel)
 
 	def _show_folder_menu(self):
 		self._show_quick_panel(self.folder_list, self._folder_selected)
@@ -164,9 +226,9 @@ class FolderBrowser:
 		if dir_ is not None:
 			if self._check_dir(dir_):
 				self.curr_dir = dir_
-				sublime.status_message(u'текущий каталог: "%s"' % self.curr_dir)
+				sublime.status_message(_('current_dir') % self.curr_dir)
 			else:
-				sublime.status_message(u'невозможно войти в каталог "%s"; текущий каталог: "%s"' % (dir_, self.curr_dir))
+				sublime.status_message(_('cant_enter_dir') % (dir_, self.curr_dir))
 		self._select_folder()
 		
 	def _select_folder(self):			
@@ -177,10 +239,10 @@ class FolderBrowser:
 
 		self.folder_list = self._sort(self.folder_list)
 		if sublime.platform() == 'windows':
-			self.folder_list.insert(0, u'* сменить диск')
-		self.folder_list.insert(0, u'* создать каталог')
-		self.folder_list.insert(0, u'* да, распаковать сюда')
-		self.folder_list.insert(0, u'* на уровень выше')		
+			self.folder_list.insert(0, _('change_disk'))
+		self.folder_list.insert(0, _('create_dir'))
+		self.folder_list.insert(0, _('unpack_here'))
+		self.folder_list.insert(0, _('level_up'))		
 		self._show_folder_menu()
 
 	def select_folder(self):
@@ -212,6 +274,18 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		self.folder_browser = FolderBrowser(self.window, self._folder_selected)
 		self.font_data = self._download_font_info()		
 		self.archive_url = None
+		self.settings = sublime.load_settings(SETTINGS_FILE)
+
+		if self.settings.get('lang') is None:
+			self.settings.set('lang', get_os_locale())
+			sublime.save_settings(SETTINGS_FILE)
+
+		if self.settings.get('lang') == 'en_US':
+			current_loc = loc['en_US']
+
+		if self.settings.get('lang') == 'ru_RU':
+			current_loc = loc['ru_RU']
+
 
 	def _download_font_info(self):		
 		print("_download_font_info")
@@ -226,9 +300,9 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		except Exception as e:
 			print("exception " + str(e))
 			if is_st3():
-				sublime.error_message(u'не удалось обновить список шрифтов')	
+				sublime.error_message(_('cant_refresh_fonts'))	
 			else:
-				sublime.status_message(u'не удалось обновить список шрифтов')
+				sublime.status_message(_('cant_refresh_fonts'))
 			result = None
 		return result
 
@@ -244,9 +318,9 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		except Exception as e:
 			print("exception " + str(e))
 			if is_st3():
-				sublime.error_message(u'не удалось скачать шрифт')	
+				sublime.error_message(_('cant_download_font'))	
 			else:
-				sublime.status_message(u'не удалось скачать шрифт')
+				sublime.status_message(_('cant_download_font'))
 			
 			result = None
 		return result
@@ -275,15 +349,16 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		except Exception as e:
 			print("exception " + str(e))
 			if is_st3():
-				sublime.error_message(u'при распаковке шрифта произошла ошибка')	
+				sublime.error_message(_('unpack_error'))	
 			else:
-				sublime.status_message(u'при распаковке шрифта произошла ошибка')
+				sublime.status_message(_('unpack_error'))
 			
 			return False
 
 	def run(self):
 		print("command start")
-		name_list = [u'* перейти на webfont.ru', u'* обновить список шрифтов', u'* скачать шрифт']
+
+		name_list = [ _('go_to_webfont'), _('update_fonts_list'), _('download_font')]
 		if self.font_data is not None:
 			for i in self.font_data:
 				name_list.append(i['name'])
@@ -307,12 +382,12 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		res = self._unpack_archive(fd, dest_folder)
 		if not res:
 			return
-		sublime.status_message(u'шрифт успешно скачан')
+		sublime.status_message(_('download_complete'))
 
 	def _folder_selected(self, dest_folder):
 		if dest_folder is None:
 			return
-		sublime.status_message(u'немного подождите')
+		sublime.status_message(_('please_wait'))
 		t = threading.Thread(args=(dest_folder, self.archive_url, ), target=self._download_font_archive_and_unpack)		
 		t.start()
 
@@ -334,7 +409,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 			try:
 				webbrowser.open(self.SITE_URL)
 			except:
-				sublime.status_message(u'не удалось открыть страницу "%s"' % self.SITE_URL)
+				sublime.status_message(_('cant_open_website') % self.SITE_URL)
 		elif index == 1:
 			old_font_data = self.font_data
 			self.font_data = self._download_font_info()

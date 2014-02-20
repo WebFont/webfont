@@ -22,14 +22,14 @@ else:
 
 def get_os_locale():
 	os_locale = locale.getlocale()
-	if os_locale is None:
+	if os_locale[0] is None:
 		return 'en_US'
 	else:
 		if os_locale[0].startswith('en'):
 			return 'en_US'
-		else if os_locale[0].startswith('ru'):
+		elif os_locale[0].startswith('ru'):
 			return 'ru_RU'
-		else
+		else:
 			return 'en_US'
 
 loc = {
@@ -276,14 +276,18 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		self.archive_url = None
 		self.settings = sublime.load_settings(SETTINGS_FILE)
 
+		print("System locale: " + get_os_locale())
+
 		if self.settings.get('lang') is None:
 			self.settings.set('lang', get_os_locale())
 			sublime.save_settings(SETTINGS_FILE)
 
 		if self.settings.get('lang') == 'en_US':
+			print("Current locale set to En")
 			current_loc = loc['en_US']
 
 		if self.settings.get('lang') == 'ru_RU':
+			print("Current locale set to Ru")
 			current_loc = loc['ru_RU']
 
 

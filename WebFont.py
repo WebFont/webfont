@@ -282,6 +282,8 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 			self.settings.set('lang', get_os_locale())
 			sublime.save_settings(SETTINGS_FILE)
 
+		global current_loc
+
 		if self.settings.get('lang') == 'en_US':
 			print("Current locale set to En")
 			current_loc = loc['en_US']
@@ -289,7 +291,6 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		if self.settings.get('lang') == 'ru_RU':
 			print("Current locale set to Ru")
 			current_loc = loc['ru_RU']
-
 
 	def _download_font_info(self):		
 		print("_download_font_info")

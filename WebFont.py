@@ -50,7 +50,12 @@ loc = {
 		'download_font' : u'* download font',
 		'download_complete' : u'font downloaded',
 		'please_wait' : u'please wait',
-		'cant_open_website' : u'can\'t open website "%s"'
+		'cant_open_website' : u'can\'t open website "%s"',
+
+		'download_mode_full': u'Full',
+		'download_mode_full_description': u'Download both cyrillic and latin versions',
+		'download_mode_latin': u'Latin only',
+		'download_mode_latin_description': u'Download only latin version'
 	},
 
 	'ru_RU':{
@@ -70,7 +75,12 @@ loc = {
 		'download_font' : u'* скачать шрифт',
 		'download_complete' : u'шрифт успешно скачан',
 		'please_wait' : u'немного подождите',
-		'cant_open_website' : u'не удалось открыть страницу "%s"'
+		'cant_open_website' : u'не удалось открыть страницу "%s"',
+
+		'download_mode_full': u'Полный',
+		'download_mode_full_description': u'Скачивать кириллицу+латиницу',
+		'download_mode_latin': u'Латиница',
+		'download_mode_latin_description': u'Скачивать только латиницу'
 	}
 }
 
@@ -265,7 +275,7 @@ class WebfontImportFontCommand(sublime_plugin.TextCommand):
 
 class WebfontCommand(sublime_plugin.WindowCommand):
 
-	URL = 'http://webfonts.ru/api/list.json'
+	URL = 'http://webfont.ru/api/newlist.json'
 	SITE_URL = 'http://webfont.ru/'
 
 	def __init__(self, window):
@@ -291,6 +301,9 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 		if self.settings.get('lang') == 'ru_RU':
 			print("Current locale set to Ru")
 			current_loc = loc['ru_RU']
+
+		self.download_mode = self.settings.get('download_mode')
+		
 
 	def _download_font_info(self):		
 		print("_download_font_info")
@@ -363,11 +376,29 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		print("command start")
 
-		name_list = [ _('go_to_webfont'), _('update_fonts_list'), _('download_font')]
-		if self.font_data is not None:
-			for i in self.font_data:
-				name_list.append(i['name'])
-		self.window.show_quick_panel(name_list, self._selected)
+		if self.download_mode is None:
+			modes = [ [_('download_mode_full'), _('download_mode_full_description') ], 
+				[_('download_mode_latin'), _('download_mode_latin_description') ]]
+			self.window.show_quick_panel(modes, self._download_mode_selected)
+		else:
+			name_list = [ _('go_to_webfont'), _('update_fonts_list'), _('download_font')]
+			if self.font_data is not None:
+				for i in self.font_data:
+					name_list.append(i['name'])
+			self.window.show_quick_panel(name_list, self._selected)
+
+	def _download_mode_selected(self, index):
+		if index < 0: return
+		if index == 0:
+			self.download_mode = 'full'
+			print("Set download mode to full")
+		elif index == 1:
+			self.download_mode = 'latin'
+			print("Set download mode to latin")
+		self.settings.set('download_mode', self.download_mode)
+		sublime.save_settings(SETTINGS_FILE)
+
+		self.run()
 
 	def _insert(self, text):
 		if is_st3():
@@ -399,7 +430,17 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 	def _font_archive_selected(self, index):
 		if index < 0: return
 
-		self.archive_url = self.font_data[index]['pack_url']
+		if self.download_mode is None:
+			self.archive_url = self.font_data[index]['pack_url']
+		elif self.download_mode == 'full':
+			self.archive_url = self.font_data[index]['pack_url']
+		elif self.download_mode == 'latin':
+			if self.font_data[index]['pack_url_latin'] is None:
+				self.archive_url = self.font_data[index]['pack_url']
+			else:	
+				self.archive_url = self.font_data[index]['pack_url_latin']
+
+		print("Download archive: " + self.archive_url)
 		self.folder_browser.select_folder()
 
 	def _show_quick_panel(self, options, done):

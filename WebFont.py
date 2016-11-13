@@ -127,9 +127,9 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 
         else:
             font_data = self.font_data[index-3]
-            text = font_data['import'] + '\n' \
-                   + font_data['comments'] + '\n' \
-                   + (_('download_reminder') % font_data['font_url'])
+            text = (_('download_reminder') % font_data['font_url']) + '\n' \
+                   + font_data['import'] + '\n' \
+                   + font_data['comments']
             self._insert(text)
 
     def _open_in_browser(self, url):

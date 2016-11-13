@@ -4,8 +4,6 @@ import sublime, sublime_plugin
 import json
 import webbrowser
 
-SETTINGS_FILE = "FontStorage.sublime-settings"
-
 def is_st3():
     return sublime.version()[0] == '3'
 
@@ -25,7 +23,7 @@ loc = {
         'please_wait' : u'please wait',
         'cant_open_website' : u'can\'t open website "%s"',
 
-        'download_reminder':u'/* Please do not use links to our site in production. You could download this font from here %s */'
+        'download_reminder':u'/* Please do not use links to FontStorage.com in production. You could download this font from here %s */'
     }
 }
 
@@ -56,12 +54,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
     def __init__(self, window):
         super(WebfontCommand, self).__init__(window)
         print("Init Fontstorage plugin")
-
         self.font_data = self._download_font_info()
-        self.archive_url = None
-        self.settings = sublime.load_settings(SETTINGS_FILE)
-
-        self.download_mode = self.settings.get('download_mode')
 
     def _download_font_info(self):
         print("_download_font_info")

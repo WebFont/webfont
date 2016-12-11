@@ -48,7 +48,7 @@ class WebfontImportFontCommand(sublime_plugin.TextCommand):
 
 class WebfontCommand(sublime_plugin.WindowCommand):
 
-    URL = 'https://fontstorage.com/api/list.json2'
+    URL = 'https://fontstorage.com/api/list.json'
     SITE_URL = 'https://fontstorage.com/'
 
     def __init__(self, window):

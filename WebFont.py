@@ -23,7 +23,7 @@ loc = {
         'please_wait' : u'please wait',
         'cant_open_website' : u'can\'t open website "%s"',
 
-        'download_reminder':u'/* Please do not use links to FontStorage.com in production. You could download this font from here %s */'
+        'download_reminder':u'/* Please do not use imports from FontStorage.com in production. You could download this font from here %s */'
     }
 }
 

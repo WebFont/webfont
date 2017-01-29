@@ -19,7 +19,7 @@ loc = {
         'unpack_error' : u'unpacking error',
         'go_to_fontstorage' : u'* go to fontstorage.com',
         'update_fonts_list' : u'* update fonts list',
-        'open_on_fontstorage' : u'* open on fontstorage.com',
+        'open_on_fontstorage' : u'* download font',
         'please_wait' : u'please wait',
         'cant_open_website' : u'can\'t open website "%s"',
 
@@ -99,6 +99,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
 
         font_url = self.font_data[index]['font_url']
         if font_url is not None:
+            font_url = font_url + "?utm_source=sublime"
             print("Go to font page: " + font_url)
             self._open_in_browser(font_url)
 

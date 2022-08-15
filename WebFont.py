@@ -57,7 +57,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
         return site_font_url 
         
     def _download_font_url(self):
-        download_font_url = self.urls['download_url'] + self.selected_font['slug'] + self.selected_font['slug'] + '.zip'
+        download_font_url = self.urls['download_url'] + self.selected_font['slug'] + '/' + self.selected_font['slug'] + '.zip'
         return download_font_url
 
     def _import_font_url(self):
@@ -101,8 +101,7 @@ class WebfontCommand(sublime_plugin.WindowCommand):
                 + self.selected_font['comments']
             self._insert(text)
         elif index == 1:
-            print('download')
-            self._open_in_browser(self._site_font_url())
+            self._open_in_browser(self._download_font_url())
         elif index == 2:
             self._open_in_browser(self._subsetting_font_url())
         elif index == 3:
